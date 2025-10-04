@@ -1,0 +1,37 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class OpenRouterService {
+  final String apiKey =
+      "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"; // 👈 pon aquí tu API key de OpenRouter
+
+  Future<String> generarCodigo(String prompt, String modelo) async {
+    final url = Uri.parse("https://openrouter.ai/api/v1/chat/completions");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer $apiKey",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "model": modelo,
+        "messages": [
+          {
+            "role": "system",
+            "content": "Eres un asistente experto en Flutter y Dart.",
+          },
+          {"role": "user", "content": prompt},
+        ],
+        "max_tokens": 800,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data["choices"][0]["message"]["content"];
+    } else {
+      throw Exception("Error: ${response.statusCode} - ${response.body}");
+    }
+  }
+}
